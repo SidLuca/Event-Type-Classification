@@ -64,6 +64,7 @@ except ImportError:
     print("Install with: pip install xgboost lightgbm")
     raise
 
+# Removed SVM from models dictionary
 models = {
     "Logistic Regression": LogisticRegression(max_iter=1000, class_weight='balanced', random_state=42),
     "Random Forest": RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=42, n_jobs=-1),
@@ -86,12 +87,13 @@ models = {
         early_stopping=True,
         n_iter_no_change=10,
         random_state=42
-    ),
-    "SVM": SVC(kernel='rbf', probability=True, class_weight='balanced', random_state=42)
+    )
+    # SVM removed from here
 }
 
+
 def evaluate_model(name, model, X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, cv):
-    use_scaled = name in ["Logistic Regression", "Neural Network (MLP)", "SVM"]
+    use_scaled = name in ["Logistic Regression", "Neural Network (MLP)"]  # Removed SVM from scaled models
     Xtr, Xte = (X_train_scaled, X_test_scaled) if use_scaled else (X_train, X_test)
 
     scores = cross_val_score(model, Xtr, y_train, cv=cv, scoring='roc_auc', n_jobs=-1)
@@ -123,6 +125,7 @@ def evaluate_model(name, model, X_train, X_test, y_train, y_test, X_train_scaled
         "model": model
     }
 
+
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
 results = Parallel(n_jobs=-1, verbose=10)(
@@ -134,6 +137,62 @@ results = Parallel(n_jobs=-1, verbose=10)(
 
 results_df = pd.DataFrame([{k: v for k, v in r.items() if k not in ['y_pred', 'y_proba', 'model']} for r in results])
 
+# Add formatted table printout
+print("\n" + "=" * 80)
+print("MODEL PERFORMANCE COMPARISON TABLE")
+print("=" * 80)
+
+# Format the results for display
+display_df = results_df.copy()
+display_df = display_df.round(6)
+
+# Reorder columns for better readability
+column_order = ["Model", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "PR-AUC", "CV Mean AUC", "CV Std AUC"]
+display_df = display_df[column_order]
+
+# Print the header
+header = f"{'Model':<25} {'Accuracy':<10} {'Precision':<10} {'Recall':<10} {'F1':<10} {'ROC-AUC':<10} {'PR-AUC':<10}"
+print(header)
+print("-" * 95)
+
+# Print each model's results
+for _, row in display_df.iterrows():
+    model_name = row['Model']
+    # Truncate long model names for better formatting
+    if len(model_name) > 24:
+        model_name = model_name[:21] + "..."
+
+    print(f"{model_name:<25} {row['Accuracy']:<10.6f} {row['Precision']:<10.6f} {row['Recall']:<10.6f} "
+          f"{row['F1']:<10.6f} {row['ROC-AUC']:<10.6f} {row['PR-AUC']:<10.6f}")
+
+print("-" * 95)
+
+# Alternative: Using pandas built-in display with formatting
+print("\nFormatted Results Table:")
+print("-" * 95)
+formatted_df = results_df[["Model", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "PR-AUC"]].copy()
+formatted_df = formatted_df.round(6)
+print(formatted_df.to_string(index=False, formatters={
+    'Accuracy': '{:.6f}'.format,
+    'Precision': '{:.6f}'.format,
+    'Recall': '{:.6f}'.format,
+    'F1': '{:.6f}'.format,
+    'ROC-AUC': '{:.6f}'.format,
+    'PR-AUC': '{:.6f}'.format
+}))
+print("-" * 95)
+
+# Identify and highlight the best model
+best_roc_auc_model = results_df.loc[results_df['ROC-AUC'].idxmax(), 'Model']
+best_f1_model = results_df.loc[results_df['F1'].idxmax(), 'Model']
+best_accuracy_model = results_df.loc[results_df['Accuracy'].idxmax(), 'Model']
+
+print(f"\nBEST PERFORMING MODELS:")
+print(f"  Highest ROC-AUC: {best_roc_auc_model} ({results_df['ROC-AUC'].max():.6f})")
+print(f"  Highest F1-Score: {best_f1_model} ({results_df['F1'].max():.6f})")
+print(f"  Highest Accuracy: {best_accuracy_model} ({results_df['Accuracy'].max():.6f})")
+
+# Continue with plotting (adjusted for 5 models instead of 6)
 plt.figure(figsize=(10, 6))
 bar_width = 0.13
 x = np.arange(len(results_df["Model"]))
@@ -190,6 +249,6 @@ save_dict = {
     "metrics": results_df.set_index("Model").loc[best_model_name].to_dict()
 }
 # save_path = f"best_model_{best_model_name.replace(' ', '_').lower()}_{pd.Timestamp.now().date()}.pkl"
-#joblib.dump(save_dict, save_path)
+# joblib.dump(save_dict, save_path)
 
-#print(f"Best model saved: {best_model_name} at {save_path}")
+# print(f"Best model saved: {best_model_name} at {save_path}")
