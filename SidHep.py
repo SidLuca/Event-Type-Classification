@@ -10,11 +10,9 @@ from sklearn.ensemble import RandomForestClassifier
 import warnings
 
 warnings.filterwarnings('ignore')
-
 # Step 1: Load and Inspect the Data
 print("Step 1: Loading and inspecting data...")
-# Load the CSV file
-df = pd.read_csv('Events.csv')  # Replace with your actual file path
+df = pd.read_csv('Events.csv')  
 
 # Display basic information about the dataset
 print(f"Dataset shape: {df.shape}")
@@ -106,16 +104,13 @@ if placeholder_check.any():
 else:
     print("No -999 placeholder values found.")
 
-# Handle missing values - remove rows with any missing values
+
 initial_shape = df.shape
 df_clean = df.dropna()
 print(f"\nRemoved {initial_shape[0] - df_clean.shape[0]} rows with missing values")
 print(f"Clean dataset shape: {df_clean.shape}")
 
-# If there were infinite values, we would handle them here
-# df_clean = df_clean.replace([np.inf, -np.inf], np.nan).dropna()
 
-# Use the clean dataset for further analysis
 df = df_clean
 
 # Phase 2: Exploratory Data Analysis (EDA) & Feature Reduction
@@ -306,5 +301,6 @@ feature_selection_results = {
     'multi_scores': multi_scores,
     'high_corr_pairs': high_corr_pairs
 }
+
 
 print("\nPhase 2 completed successfully! Ready for Phase 3: Model Building and Training.")
