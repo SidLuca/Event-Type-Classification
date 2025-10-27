@@ -38,7 +38,7 @@ df['isBBar'] = df['type'].apply(lambda x: 1 if x in [0, 1] else 0)
 # Remove NaNs and infinities
 df.replace([np.inf, -np.inf], np.nan, inplace=True)
 df.dropna(inplace=True)
-print(f"✅ Clean data: {df.shape[0]} rows, {df.shape[1]} columns")
+print(f"Clean data: {df.shape[0]} rows, {df.shape[1]} columns")
 
 features = [c for c in df.columns if c not in ['type', 'isBBar']]
 X = df[features]
@@ -49,7 +49,7 @@ rf.fit(X, y)
 importances = pd.DataFrame({'Feature': features, 'Importance': rf.feature_importances_})
 importances = importances.sort_values('Importance', ascending=False).head(25)
 selected_features = importances['Feature'].tolist()
-print(f"📊 Using top {len(selected_features)} features.")
+print(f"Using top {len(selected_features)} features.")
 importances
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -103,7 +103,7 @@ results = []
 probabilities = {}
 
 for name, model in models.items():
-    print(f"\n🚀 Training {name}...")
+    print(f"\n Training {name}...")
     use_scaled = name in ["Logistic Regression", "Neural Network (MLP)", "SVM"]
     Xtr, Xte = (X_train_scaled, X_test_scaled) if use_scaled else (X_train, X_test)
     model.fit(Xtr, y_train)
@@ -192,4 +192,4 @@ plt.show()
 best_model_name = results_df.sort_values("ROC-AUC", ascending=False).iloc[0]["Model"]
 best_model = models[best_model_name]
 joblib.dump(best_model, f"best_model_{best_model_name.replace(' ', '_').lower()}.pkl")
-print(f"\n✅ Best model: {best_model_name} — saved to disk.")
+print(f"\n Best model: {best_model_name} — saved to disk.")
