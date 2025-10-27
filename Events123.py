@@ -10,13 +10,9 @@ from sklearn.ensemble import RandomForestClassifier
 import warnings
 
 warnings.filterwarnings('ignore')
-
-# Step 1: Load and Inspect the Data
 print("Step 1: Loading and inspecting data...")
-# Load the CSV file
-df = pd.read_csv('Events.csv')  # Replace with your actual file path
+df = pd.read_csv('Events.csv')
 
-# Display basic information about the dataset
 print(f"Dataset shape: {df.shape}")
 print("\nFirst 5 rows:")
 print(df.head())
@@ -26,13 +22,10 @@ print(df.info())
 
 print("\nBasic statistics:")
 print(df.describe())
-
-# Check for the target variable 'type'
 print(f"\nUnique values in 'type' column: {sorted(df['type'].unique())}")
 
 # Step 2: Analyze the Target Variable (Class Distribution)
 print("\nStep 2: Analyzing class distribution...")
-# Map the type codes to meaningful names for plotting
 type_names = {
     0: 'B+B-',
     1: 'B0B0bar',
@@ -41,8 +34,6 @@ type_names = {
     4: 'ddbar',
     5: 'ssbar'
 }
-
-# Create count plot for the multi-class distribution
 plt.figure(figsize=(12, 6))
 
 plt.subplot(1, 2, 1)
@@ -54,7 +45,6 @@ plt.xlabel('Event Type')
 plt.ylabel('Count')
 plt.xticks(rotation=45)
 
-# Step 3: Create Binary Classification Target
 print("\nStep 3: Creating binary classification target...")
 df['isBBar'] = df['type'].apply(lambda x: 1 if x in [0, 1] else 0)
 
@@ -81,13 +71,9 @@ print(f"Continuum events (isBBar=0): {binary_counts[0]} events ({binary_counts[0
 
 # Step 4: Handle Missing and Invalid Values
 print("\nStep 4: Handling missing and invalid values...")
-
-# Check for missing values
 print("Missing values in each column:")
 missing_values = df.isnull().sum()
 print(missing_values[missing_values > 0])
-
-# Check for infinite values
 print("\nChecking for infinite values...")
 numeric_cols = df.select_dtypes(include=[np.number]).columns
 inf_mask = np.isinf(df[numeric_cols]).any()
@@ -97,7 +83,6 @@ if inf_mask.any():
 else:
     print("No infinite values found.")
 
-# Check for placeholder values (like -999)
 print("\nChecking for potential placeholder values (-999)...")
 placeholder_check = (df[numeric_cols] == -999).any()
 if placeholder_check.any():
@@ -106,16 +91,11 @@ if placeholder_check.any():
 else:
     print("No -999 placeholder values found.")
 
-# Handle missing values - remove rows with any missing values
 initial_shape = df.shape
 df_clean = df.dropna()
 print(f"\nRemoved {initial_shape[0] - df_clean.shape[0]} rows with missing values")
 print(f"Clean dataset shape: {df_clean.shape}")
 
-# If there were infinite values, we would handle them here
-# df_clean = df_clean.replace([np.inf, -np.inf], np.nan).dropna()
-
-# Use the clean dataset for further analysis
 df = df_clean
 
 # Phase 2: Exploratory Data Analysis (EDA) & Feature Reduction
@@ -1068,4 +1048,5 @@ print(f"Signal Efficiency: {signal_efficiency:.4f}")
 print(f"Background Rejection: {background_rejection:.4f}")
 print(f"Purity: {purity:.4f}")
 print(f"\nModel successfully trained and evaluated on {X_test_final.shape[0]} test events")
+
 print("Ready for deployment or further analysis!")
